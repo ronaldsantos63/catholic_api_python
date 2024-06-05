@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 
@@ -12,7 +10,7 @@ api = Api(app)
 
 class DailyLurgy(Resource):
     def get(self):
-        period = request.json['period'] if request.is_json else None
+        period = request.headers.get('period', None)
 
         config = Config()
         extractor_service = ExtractorService(config)
