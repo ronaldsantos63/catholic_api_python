@@ -21,5 +21,10 @@ class DailyLurgy(Resource):
 api.add_resource(DailyLurgy, "/liturgy", endpoint="liturgy")
 
 
+@app.route("/")
+def hello_world():
+    return "<h1>Catholic Api</h1>";
+
+
 if __name__ == '__main__':
     app.run()
