@@ -1,16 +1,35 @@
+import logging
+from logging.handlers import RotatingFileHandler
+
 from flask import Flask, jsonify, request, render_template
 from flask_restful import Api, Resource
 
 from extractor.config import Config
 from extractor.extractor_service import ExtractorService
+from middleware.ExceptionLoggingMiddleware import ExceptionLoggingMiddleware
 
 app = Flask(__name__)
 api = Api(app)
 
+# Configuração básica de logging
+if not app.debug:
+    # Configuração de logging em produção
+    handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=3)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+    handler.setFormatter(formatter)
+    app.logger.addHandler(handler)
+    app.logger.setLevel(logging.INFO)
+
+app.wsgi_app = ExceptionLoggingMiddleware(app.wsgi_app)
+
 
 class DailyLurgy(Resource):
     def get(self):
-        period = request.headers.get('period', None)
+        period: str | None = None
+        if request.headers:
+            period = request.headers.get('period', None)
 
         config = Config()
         extractor_service = ExtractorService(config)
