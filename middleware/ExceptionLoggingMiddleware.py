@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, request
 
 
 class ExceptionLoggingMiddleware:
@@ -9,7 +9,8 @@ class ExceptionLoggingMiddleware:
         try:
             return self.app(environ, start_response)
         except Exception as e:
-            self.app.logger.exception(f'Unhandled exception: {e}', exc_info=True)
+            headers = {key: value for key, value in request.headers}
+            self.app.logger.exception(f'Unhandled exception: {e}\nHeaders: {headers}', exc_info=True)
             response = jsonify(error="Internal Server Error", message=str(e))
             start_response('500 Internal Server Error', [('Content-Type', 'application/json')])
             return [response.data]
