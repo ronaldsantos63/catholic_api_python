@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_restful import Api, Resource
 
 from extractor.config import Config
@@ -24,6 +24,11 @@ api.add_resource(DailyLurgy, "/liturgy", endpoint="liturgy")
 @app.route("/")
 def hello_world():
     return "<h1>Catholic Api</h1>";
+
+
+@app.route("/privacy")
+def privacy():
+    return render_template('privacy.html')
 
 
 if __name__ == '__main__':
