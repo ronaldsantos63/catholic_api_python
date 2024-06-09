@@ -27,6 +27,7 @@ app.wsgi_app = ExceptionLoggingMiddleware(app.wsgi_app)
 
 class DailyLurgy(Resource):
     def get(self):
+        app.logger.log(f"searching liturgy by period: {request.args.get('period', default=None)}")
         period: str | None = None
         if request.headers:
             period = request.headers.get('period', None)
