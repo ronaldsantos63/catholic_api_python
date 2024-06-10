@@ -27,15 +27,21 @@ app.wsgi_app = ExceptionLoggingMiddleware(app.wsgi_app)
 
 class DailyLurgy(Resource):
     def get(self):
-        app.logger.info(f"searching liturgy by period: {request.args.get('period', default=None)}")
-        period: str | None = None
-        if request.headers:
+        try:
             period = request.headers.get('period', None)
 
-        config = Config()
-        extractor_service = ExtractorService(config)
-        scrapy = extractor_service.daily_liturgy_markdown(period)
-        return jsonify(scrapy)
+            app.logger.info(f"searching liturgy by period: {request.headers.get('period', default=None)}")
+
+            config = Config()
+            extractor_service = ExtractorService(config)
+            scrapy = extractor_service.daily_liturgy_markdown(period)
+            return jsonify(scrapy)
+        except Exception as e:
+            period = request.headers.get('period', None)
+            app.logger.error(f"An unexpected error occurred while scraping the liturgy for the period: %s",
+                             period, exc_info=e)
+            return jsonify(
+                {"error": f'An unexpected error occurred while scraping the liturgy for the period: {period}'}), 500
 
 
 api.add_resource(DailyLurgy, "/liturgy", endpoint="liturgy")
