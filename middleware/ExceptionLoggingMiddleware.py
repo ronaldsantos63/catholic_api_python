@@ -1,5 +1,7 @@
 from flask import jsonify, request
 
+from adapter.logging_adapter import HostLoggerAdapter
+
 
 class ExceptionLoggingMiddleware:
     def __init__(self, app):
