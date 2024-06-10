@@ -41,7 +41,7 @@ class DailyLurgy(Resource):
             app.logger.error(f"An unexpected error occurred while scraping the liturgy for the period: %s",
                              period, exc_info=e)
             return jsonify(
-                {"error": f'An unexpected error occurred while scraping the liturgy for the period: {period}'}), 500
+                {"error": f'No liturgy found for the period: {period}'}), 404
 
 
 api.add_resource(DailyLurgy, "/liturgy", endpoint="liturgy")
