@@ -1,13 +1,12 @@
 import re
-from collections import OrderedDict
-from datetime import datetime
+from typing import Optional
+from urllib.parse import urljoin
 
-import bs4.element
 import requests
-from bs4 import BeautifulSoup
-from markdownify import markdownify, MarkdownConverter
+from bs4 import BeautifulSoup, Tag
 
 from extractor.config import Config
+from extractor.exceptions import ExternalSourceError, InvalidLiturgySourceError, LiturgyNotFoundError
 from extractor.utils import Utils
 
 
@@ -17,79 +16,99 @@ class ExtractorService:
     def __init__(self, config: Config):
         self.__config = config
 
-    def __get_liturgy_url(self, period: str | None) -> str | None:
-        if not period:
-            period = datetime.now().strftime("%d/%m/%Y")
+    def __get_liturgy_url(self, period: Optional[str]) -> str:
+        period = Utils.normalize_period(period)
+        query_params = Utils.map_period_to_query_params(period)
 
         data = {
             'action': 'widget-ajax',
-            'sMes': int(Utils.split_period(period)[1]),
-            'sAno': int(Utils.split_period(period)[2]),
+            'sDia': query_params['sDia'],
+            'sMes': query_params['sMes'],
+            'sAno': query_params['sAno'],
             'title': '',
             'type': 'liturgia',
             'ajax': 'true',
         }
 
-        calendar = requests.post(
-            f"{self.__config.BASE_URL}/wp-admin/admin-ajax.php",
-            cookies=self.__config.COOKIES_AJAX,
-            headers=self.__config.HEADERS_AJAX,
-            data=data
-        )
+        try:
+            calendar = requests.post(
+                f"{self.__config.BASE_URL}/wp-admin/admin-ajax.php",
+                cookies=self.__config.COOKIES_AJAX,
+                headers=self.__config.HEADERS_AJAX,
+                data=data,
+                timeout=self.__config.REQUEST_TIMEOUT
+            )
+            calendar.raise_for_status()
+        except requests.RequestException as exc:
+            raise ExternalSourceError("Could not fetch liturgy calendar") from exc
 
         calendar_soup = BeautifulSoup(calendar.content, 'html.parser')
-        a_tag = calendar_soup.find(name="a", attrs=dict(href=re.compile(Utils.map_period_to_query_params_str(period))))
-        return a_tag['href']
+        href_pattern = re.compile(re.escape(Utils.map_period_to_query_params_str(period)))
+        a_tag = calendar_soup.find(name="a", attrs=dict(href=href_pattern))
+        if not a_tag or not a_tag.get('href'):
+            raise LiturgyNotFoundError(f"No liturgy found for the period: {period}")
 
-    def __parse_liturgy(self, element: bs4.Tag) -> dict:
+        return urljoin(self.__config.BASE_URL, a_tag['href'])
+
+    def __parse_liturgy(self, element: Tag) -> dict:
         all_reading = element.find_all('p')
 
         reading = {'title': all_reading[1].get_text(),
                    'head': all_reading[2].get_text(),
                    'footer': all_reading[-2].get_text().replace("- ", ""),
                    'footer_response': all_reading[-1].get_text().replace("- ", ""),
-                   'all_html': ' '.join(child.prettify() for child in element.findChildren())}
+                   'all_html': ' '.join(child.prettify() for child in element.find_all())}
 
         text = all_reading[2].find_next()
-        # for div in text:
-        #     div.get_text()
-        #     # for strong in phrase.find_all('strong'):
-        #     #     strong.decompose()
 
         reading['text'] = ' '.join(p.get_text() for p in text)
         reading['text'] = reading['text'].replace("  ", " ")
 
         return reading
 
-    def __parse_response(self, period: str | None = None) -> BeautifulSoup:
-        page = requests.get(self.__get_liturgy_url(period))
+    def __parse_response(self, period: Optional[str] = None) -> BeautifulSoup:
+        try:
+            page = requests.get(
+                self.__get_liturgy_url(period),
+                timeout=self.__config.REQUEST_TIMEOUT
+            )
+            page.raise_for_status()
+        except requests.RequestException as exc:
+            raise ExternalSourceError("Could not fetch liturgy page") from exc
+
         soup = BeautifulSoup(page.content, 'html.parser')
         return soup
 
     def __parse_header_scrapy(self, soup: BeautifulSoup) -> dict:
         data = dict(date_string=dict())
 
-        data['date_string']['day'] = soup.find(id='dia-calendar').get_text()
-        data['date_string']['month'] = soup.find(id='mes-calendar').get_text()
-        data['date_string']['year'] = soup.find(id='ano-calendar').get_text()
+        data['date_string']['day'] = self.__required_text(soup, id='dia-calendar')
+        data['date_string']['month'] = self.__required_text(soup, id='mes-calendar')
+        data['date_string']['year'] = self.__required_text(soup, id='ano-calendar')
 
         data['date'] = Utils.date_dict_to_str(data['date_string'])
 
-        data['color'] = soup.find(class_='cor-liturgica').get_text()
-        data['color'] = Utils.clean_html(
-            data['color'].split(":")[1] if len(data['color'].split(":")) > 0 else data['color'])
+        color_text = self.__required_text(soup, class_='cor-liturgica')
+        _, separator, color = color_text.partition(":")
+        data['color'] = Utils.clean_html(color if separator else color_text)
 
-        data['entry_title'] = Utils.clean_html(soup.find(class_='entry-title').get_text())
+        data['entry_title'] = Utils.clean_html(self.__required_text(soup, class_='entry-title'))
         return data
 
-    def daily_liturgy_markdown(self, period: str | None = None) -> dict:
+    @staticmethod
+    def __required_text(soup: BeautifulSoup, **kwargs) -> str:
+        element = soup.find(**kwargs)
+        if not element:
+            raise InvalidLiturgySourceError(f"Missing expected liturgy field: {kwargs}")
+        return element.get_text()
+
+    def daily_liturgy_markdown(self, period: Optional[str] = None) -> dict:
         soup = self.__parse_response(period)
         data = self.__parse_header_scrapy(soup)
         data['readings'] = dict()
 
         find_first_reading = soup.find(id='liturgia-1')
         if find_first_reading:
-            # data['readings']['first_reading'] = markdownify(find_first_reading.get_text())
             data['readings']['first_reading'] = Utils.convert_soup_to_markdown(find_first_reading)
 
         find_psalm = soup.find(id='liturgia-2')
@@ -106,7 +125,7 @@ class ExtractorService:
 
         return data
 
-    def daily_liturgy(self, period: str | None = None) -> dict:
+    def daily_liturgy(self, period: Optional[str] = None) -> dict:
         """
 
         :param period: pattern dd/mm/yyyy

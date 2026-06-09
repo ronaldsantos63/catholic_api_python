@@ -78,6 +78,13 @@ Resposta resumida:
 | --- | --- | --- |
 | `BASE_URL` | `https://liturgia.cancaonova.com` | Fonte externa usada pelo scraper. |
 | `FLASK_ENV` | não definido | Em `development`, logs vão para stdout com nível `DEBUG`; fora disso, usa `app.log`. |
+| `REQUEST_TIMEOUT` | `10` | Timeout, em segundos, para chamadas HTTP externas. |
+| `CATHOLIC_API_KEY` | não definido | Quando definido, exige header `X-API-Key` para endpoints da API. |
+| `RATE_LIMIT_ENABLED` | `true` | Liga/desliga rate limit em memória. |
+| `RATE_LIMIT_REQUESTS` | `120` | Máximo de requisições por IP no intervalo. |
+| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Janela do rate limit, em segundos. |
+| `MAX_CONTENT_LENGTH` | `1024` | Tamanho máximo aceito para payload da requisição. |
+| `SECURITY_HSTS_ENABLED` | `false` | Adiciona HSTS quando a app estiver atrás de HTTPS. |
 
 ## Arquitetura
 
@@ -93,10 +100,16 @@ Mais detalhes em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Validação
 
-Não há suíte de testes versionada neste momento. A verificação mínima de sintaxe usada no projeto é:
+A verificação mínima de sintaxe usada no projeto é:
 
 ```bash
 PYTHONPYCACHEPREFIX=/private/tmp/catholic-api-pycache python3 -m compileall app.py adapter extractor middleware passenger_wsgi.py
+```
+
+Testes unitários básicos:
+
+```bash
+python -m unittest
 ```
 
 Ao alterar scraping, prefira testes com HTML fixture ou mocks de `requests` para evitar depender da disponibilidade da Canção Nova.

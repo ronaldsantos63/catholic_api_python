@@ -15,7 +15,10 @@ Em outros ambientes WSGI, a aplicação Flask principal está em `app:app`.
 - Em `FLASK_ENV=development`, logs vão para `StreamHandler`.
 - Fora de `development`, logs usam `RotatingFileHandler` em `app.log`, com `maxBytes=10000` e `backupCount=3`.
 - O `HostLoggerAdapter` prefixa logs com o IP remoto.
-- `@app.before_request` registra método, path completo e headers.
+- `@app.before_request` registra método, path e headers sanitizados.
+- Headers sensíveis como `Authorization`, `Cookie` e `X-API-Key` são mascarados.
+- A API aplica rate limit em memória por IP quando `RATE_LIMIT_ENABLED=true`.
+- `CATHOLIC_API_KEY`, quando definido, exige header `X-API-Key` nos endpoints da API.
 
 ## Dependência Externa
 
@@ -34,9 +37,8 @@ Se a fonte externa mudar, sintomas esperados:
 
 ## Recomendações
 
-- Adicionar timeout nas chamadas `requests`.
-- Validar `period` antes de chamar a fonte externa.
+- Manter timeout nas chamadas `requests`.
+- Manter validação de `period` antes de chamar a fonte externa.
 - Considerar cache por data para reduzir chamadas externas.
 - Adicionar healthcheck que não dependa da Canção Nova.
-- Evitar logs extensos de headers em produção se houver risco de dados sensíveis.
-
+- Manter mascaramento de headers sensíveis em produção.

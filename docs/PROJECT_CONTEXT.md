@@ -20,9 +20,8 @@ O projeto depende da estrutura HTML e dos endpoints públicos de `https://liturg
 - Não há banco de dados.
 - Não há cache persistente.
 - Não há OpenAPI/Swagger versionado.
-- Não há suíte de testes automatizada versionada.
+- Não há suíte extensa de testes automatizados; existe uma suíte mínima em `tests/`.
 
 ## Contrato principal
 
 `GET /liturgy` deve continuar aceitando o header opcional `period` no formato `dd/mm/yyyy` e retornar JSON com `date_string`, `date`, `color`, `entry_title` e `readings`.
-

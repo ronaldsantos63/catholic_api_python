@@ -1,8 +1,17 @@
 import os
 
 
+def get_float_env(name, default):
+    try:
+        value = float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+    return value if value > 0 else default
+
+
 class Config(object):
     BASE_URL = os.environ.get('BASE_URL', default="https://liturgia.cancaonova.com")
+    REQUEST_TIMEOUT = get_float_env('REQUEST_TIMEOUT', 10.0)
     COOKIES_AJAX = {
         'qtrans_front_language': 'pb',
         'cookielawinfo-checkbox-necessary': 'yes',

@@ -2,12 +2,13 @@
 
 ## Estado Atual
 
-Não há suíte de testes versionada neste repositório.
+Há uma suíte mínima em `tests/` usando `unittest` e `Flask.test_client()`.
 
 A validação mínima atual é compilação de sintaxe:
 
 ```bash
 PYTHONPYCACHEPREFIX=/private/tmp/catholic-api-pycache python3 -m compileall app.py adapter extractor middleware passenger_wsgi.py
+python -m unittest
 ```
 
 ## Testes Recomendados
@@ -42,4 +43,3 @@ Use `app.test_client()`.
 - Testes que dependem da Canção Nova ao vivo por padrão.
 - Fixtures grandes sem necessidade.
 - Snapshot de HTML inteiro quando um fragmento representativo basta.
-

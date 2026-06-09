@@ -8,6 +8,7 @@ Use these checks when reviewing pull requests in this repository.
 - Treat leaks of headers, cookies, tokens, or personal data in logs as high priority.
 - Treat unvalidated user input in new routes or scraper parameters as high priority.
 - Treat new network calls without timeouts as high priority.
+- Treat changes that bypass rate limiting, API key checks, or security headers as high priority.
 
 ## API Contract
 
@@ -25,4 +26,3 @@ Use these checks when reviewing pull requests in this repository.
 
 - Flag new dependencies that are not necessary for the requested change.
 - Check that `requirements.txt` remains installable.
-

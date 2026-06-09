@@ -28,6 +28,13 @@ python app.py
 | --- | --- |
 | `BASE_URL` | Troca a fonte externa, útil para fixtures, proxy ou ambiente de teste. |
 | `FLASK_ENV` | Em `development`, usa logs em stdout com nível `DEBUG`; em outros ambientes, grava em `app.log`. |
+| `REQUEST_TIMEOUT` | Timeout das chamadas HTTP externas. |
+| `CATHOLIC_API_KEY` | Quando definido, exige `X-API-Key` nos endpoints da API. |
+| `RATE_LIMIT_ENABLED` | Liga/desliga rate limit em memória. |
+| `RATE_LIMIT_REQUESTS` | Limite de requisições por IP. |
+| `RATE_LIMIT_WINDOW_SECONDS` | Janela do rate limit. |
+| `MAX_CONTENT_LENGTH` | Tamanho máximo do payload. |
+| `SECURITY_HSTS_ENABLED` | Adiciona HSTS em ambientes HTTPS. |
 
 ## Convenções
 
@@ -41,6 +48,7 @@ python app.py
 
 ```bash
 PYTHONPYCACHEPREFIX=/private/tmp/catholic-api-pycache python3 -m compileall app.py adapter extractor middleware passenger_wsgi.py
+python -m unittest
 ```
 
 ## Antes de abrir PR
@@ -49,4 +57,3 @@ PYTHONPYCACHEPREFIX=/private/tmp/catholic-api-pycache python3 -m compileall app.
 2. Se alterou contrato HTTP, atualize `docs/API.md`.
 3. Se alterou scraping, documente a premissa em `docs/ARCHITECTURE.md`.
 4. Se alterou fluxo para agentes, atualize `AGENTS.md` e `docs/AI_AGENTS.md`.
-

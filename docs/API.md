@@ -29,6 +29,7 @@ Retorna a liturgia diária.
 | Header | Obrigatório | Formato | Descrição |
 | --- | --- | --- | --- |
 | `period` | não | `dd/mm/yyyy` | Data da liturgia. Se ausente, usa a data atual do servidor. |
+| `X-API-Key` | somente se `CATHOLIC_API_KEY` estiver definido | texto | Chave opcional de acesso à API. |
 
 ### Exemplo
 
@@ -72,7 +73,27 @@ curl -H "period: 23/05/2024" http://127.0.0.1:5000/liturgy
 
 ### Erros
 
-Quando o scraper não consegue montar a resposta, `DailyLurgy.get()` retorna:
+Data inválida:
+
+```json
+{
+  "error": "period must use dd/mm/yyyy and be a valid date"
+}
+```
+
+com status `400`.
+
+Sem chave válida quando `CATHOLIC_API_KEY` está configurado:
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+com status `401`.
+
+Quando a data válida não é encontrada na fonte externa:
 
 ```json
 {
@@ -82,12 +103,41 @@ Quando o scraper não consegue montar a resposta, `DailyLurgy.get()` retorna:
 
 com status `404`.
 
+Quando há excesso de requisições:
+
+```json
+{
+  "error": "Too many requests"
+}
+```
+
+com status `429` e header `Retry-After`.
+
+Quando a fonte externa muda de estrutura:
+
+```json
+{
+  "error": "Missing expected liturgy field: ..."
+}
+```
+
+com status `502`.
+
+Quando a fonte externa falha:
+
+```json
+{
+  "error": "Could not fetch liturgy page"
+}
+```
+
+com status `503`.
+
 Exceções não tratadas pelo middleware retornam:
 
 ```json
 {
-  "error": "Internal Server Error",
-  "message": "..."
+  "error": "Internal Server Error"
 }
 ```
 
@@ -96,4 +146,3 @@ com status `500`.
 ## Compatibilidade
 
 Preserve o nome dos campos públicos ao alterar o scraper. Se for necessário adicionar campos, prefira mudança aditiva e documente aqui.
-

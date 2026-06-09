@@ -34,6 +34,7 @@ Verificação mínima:
 
 ```bash
 PYTHONPYCACHEPREFIX=/private/tmp/catholic-api-pycache python3 -m compileall app.py adapter extractor middleware passenger_wsgi.py
+python -m unittest
 ```
 
 ## Contrato da API

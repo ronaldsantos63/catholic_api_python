@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Optional
 
 from bs4 import Tag
 from markdownify import MarkdownConverter
@@ -31,14 +32,14 @@ class Utils:
         return day
 
     @staticmethod
-    def clear_text(text: str | None) -> str:
+    def clear_text(text: Optional[str]) -> str:
         if text:
             return text.strip()
         else:
             return ''
 
     @staticmethod
-    def clear_date(date_text: str | None) -> str:
+    def clear_date(date_text: Optional[str]) -> str:
         if date_text:
             date = datetime.fromisoformat(date_text)
             return date.strftime('%d/%m/%Y')
@@ -55,12 +56,26 @@ class Utils:
 
     @staticmethod
     def map_period_to_query_params(period: str) -> dict:
+        period = Utils.normalize_period(period)
         period_split = Utils.split_period(period)
         return {"sDia": int(period_split[0]), "sMes": int(period_split[1]), "sAno": period_split[2]}
 
     @staticmethod
     def split_period(period: str) -> list:
         return period.split('/')
+
+    @staticmethod
+    def normalize_period(period: Optional[str]) -> str:
+        if not period:
+            return datetime.now().strftime("%d/%m/%Y")
+
+        period = period.strip()
+        try:
+            parsed_date = datetime.strptime(period, "%d/%m/%Y")
+        except ValueError:
+            raise ValueError("period must use dd/mm/yyyy and be a valid date")
+
+        return parsed_date.strftime("%d/%m/%Y")
 
     @staticmethod
     def clean_html(html: str) -> str:

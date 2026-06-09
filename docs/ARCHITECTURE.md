@@ -5,7 +5,7 @@
 O projeto é uma aplicação Flask pequena, organizada em camadas simples:
 
 1. `app.py` recebe a requisição HTTP.
-2. `DailyLurgy.get()` lê o header `period`.
+2. `DailyLurgy.get()` lê e valida o header `period`.
 3. `ExtractorService.daily_liturgy_markdown(period)` resolve a URL da liturgia e faz scraping.
 4. `Utils` normaliza datas, query params, HTML e Markdown.
 5. Flask retorna o dicionário como JSON.
@@ -58,7 +58,7 @@ Cliente
 ### `middleware/ExceptionLoggingMiddleware.py`
 
 - Captura exceções não tratadas na aplicação WSGI.
-- Registra headers e retorna JSON com status 500.
+- Registra headers sanitizados e retorna JSON genérico com status 500.
 
 ### `adapter/logging_adapter.py`
 
@@ -73,5 +73,4 @@ Cliente
 - O scraper assume IDs como `liturgia-1`, `liturgia-2`, `liturgia-3`, `liturgia-4` e classes como `cor-liturgica` e `entry-title`.
 - `__get_liturgy_url` assume que o HTML AJAX contém um link cujo `href` inclui `sDia`, `sMes` e `sAno`.
 - Alguns trechos usam índices fixos de parágrafos; qualquer mudança no HTML de origem pode quebrar o parser.
-- O projeto ainda não valida formalmente o formato do header `period`.
-
+- O formato do header `period` é validado como data real em `dd/mm/yyyy`.
