@@ -1,0 +1,4 @@
+interface:
+  display_name: "Catholic API Maintenance"
+  short_description: "Maintain Flask API behavior safely"
+  default_prompt: "Use $catholic-api-maintenance to update this Flask API while preserving its public contract."

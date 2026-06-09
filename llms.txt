@@ -1,0 +1,33 @@
+# Catholic API Python
+
+> Flask API that returns Catholic daily liturgy data from Canção Nova as JSON with Markdown readings.
+
+## Canonical Agent Instructions
+
+- [AGENTS.md](AGENTS.md): canonical coding-agent instructions.
+- [docs/AI_AGENTS.md](docs/AI_AGENTS.md): agent documentation architecture and tool-specific files.
+
+## Human Documentation
+
+- [README.md](README.md): setup, usage, examples, architecture summary.
+- [docs/INDEX.md](docs/INDEX.md): documentation map.
+- [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md): project goal and boundaries.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): request flow and internal components.
+- [docs/API.md](docs/API.md): HTTP contract for `/`, `/privacy`, and `/liturgy`.
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): local setup and development commands.
+- [docs/TESTING.md](docs/TESTING.md): current validation and recommended tests.
+- [docs/OPERATIONS.md](docs/OPERATIONS.md): deployment, logging, and external dependency notes.
+- [docs/SECURITY.md](docs/SECURITY.md): security and privacy risks.
+- [REVIEW.md](REVIEW.md): pull request review guidance.
+
+## Agent-Specific Files
+
+- [CLAUDE.md](CLAUDE.md): Claude Code entrypoint.
+- [GEMINI.md](GEMINI.md): Gemini CLI entrypoint.
+- [.github/copilot-instructions.md](.github/copilot-instructions.md): GitHub Copilot repository instructions.
+- [.cursor/rules/catholic-api.mdc](.cursor/rules/catholic-api.mdc): Cursor project rule.
+- [.devin/rules/catholic-api.md](.devin/rules/catholic-api.md): Devin/Cascade preferred rule.
+- [.windsurf/rules/catholic-api.md](.windsurf/rules/catholic-api.md): Windsurf legacy fallback rule.
+- [.agents/skills/](.agents/skills/): Codex and GitHub Copilot repo-scoped skills.
+- [.claude/skills/](.claude/skills/): Claude Code project skills.
+- [.gemini/skills/](.gemini/skills/): Gemini CLI workspace skills.

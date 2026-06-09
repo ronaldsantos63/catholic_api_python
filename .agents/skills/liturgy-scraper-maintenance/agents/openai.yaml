@@ -1,0 +1,4 @@
+interface:
+  display_name: "Liturgy Scraper Maintenance"
+  short_description: "Maintain liturgy scraping workflows"
+  default_prompt: "Use $liturgy-scraper-maintenance to adjust the liturgy scraper safely."

@@ -1,0 +1,18 @@
+---
+description: Always-on guidance for maintaining the Catholic API Python Flask project.
+globs:
+alwaysApply: true
+---
+
+# Catholic API Python
+
+Use `AGENTS.md` as the canonical project instructions.
+
+@AGENTS.md
+
+## Cursor Notes
+
+- Keep edits scoped and preserve the Flask API contract.
+- Use the docs in `docs/` before changing public behavior.
+- After Python changes, run the compileall command from `AGENTS.md`.
+

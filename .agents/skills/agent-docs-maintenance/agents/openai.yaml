@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Docs Maintenance"
+  short_description: "Maintain AI-agent project guidance"
+  default_prompt: "Use $agent-docs-maintenance to update the repository agent instructions consistently."
