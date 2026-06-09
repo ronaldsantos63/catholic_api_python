@@ -11,7 +11,7 @@ API Flask para consultar a liturgia diária católica a partir da Canção Nova 
 
 ## Requisitos
 
-- Python 3.9 ou superior.
+- Python 3.12 recomendado, definido em `.python-version` para deploy.
 - Dependências em `requirements.txt`.
 - Acesso de rede para `https://liturgia.cancaonova.com`, usado como fonte externa.
 
@@ -86,6 +86,75 @@ Resposta resumida:
 | `MAX_CONTENT_LENGTH` | `1024` | Tamanho máximo aceito para payload da requisição. |
 | `SECURITY_HSTS_ENABLED` | `false` | Adiciona HSTS quando a app estiver atrás de HTTPS. |
 
+## Deploy no Render
+
+O projeto já está preparado para Render com:
+
+- `render.yaml`: Blueprint do serviço web.
+- `.python-version`: versão Python usada no build.
+- `gunicorn`: servidor WSGI de produção em `requirements.txt`.
+
+### Opção recomendada: Blueprint
+
+1. Faça commit e push das alterações para o GitHub/GitLab/Bitbucket.
+2. No Render Dashboard, clique em **New > Blueprint**.
+3. Conecte o repositório `catholic_api_python`.
+4. Confirme o Blueprint detectado em `render.yaml`.
+5. Crie o serviço e aguarde o build/deploy terminar.
+6. Teste a URL pública gerada pelo Render:
+
+```bash
+curl https://SEU-SERVICO.onrender.com/
+curl https://SEU-SERVICO.onrender.com/liturgy
+curl -H "period: 23/05/2024" https://SEU-SERVICO.onrender.com/liturgy
+```
+
+O Blueprint usa:
+
+```text
+Build Command: pip install -r requirements.txt
+Start Command: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 30
+Health Check Path: /
+```
+
+### Opção manual: Web Service
+
+Se preferir criar sem Blueprint:
+
+1. No Render Dashboard, clique em **New > Web Service**.
+2. Conecte o repositório.
+3. Configure:
+   - Runtime: `Python`
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 30`
+   - Health Check Path: `/`
+4. Adicione as variáveis necessárias em **Environment**.
+
+Variáveis recomendadas no Render:
+
+| Variável | Valor |
+| --- | --- |
+| `FLASK_ENV` | `production` |
+| `BASE_URL` | `https://liturgia.cancaonova.com` |
+| `REQUEST_TIMEOUT` | `10` |
+| `RATE_LIMIT_ENABLED` | `true` |
+| `RATE_LIMIT_REQUESTS` | `120` |
+| `RATE_LIMIT_WINDOW_SECONDS` | `60` |
+| `MAX_CONTENT_LENGTH` | `1024` |
+| `SECURITY_HSTS_ENABLED` | `true` |
+
+`CATHOLIC_API_KEY` é opcional. Se for configurada no Render, os clientes precisam enviar:
+
+```bash
+curl -H "X-API-Key: SUA_CHAVE" https://SEU-SERVICO.onrender.com/liturgy
+```
+
+Observações:
+
+- O plano gratuito pode hibernar após inatividade, causando lentidão na primeira requisição.
+- O endpoint `/` é usado como healthcheck porque não depende da Canção Nova.
+- A API precisa conseguir acessar `https://liturgia.cancaonova.com` em produção.
+
 ## Arquitetura
 
 - `app.py`: aplicação Flask, rotas, logging e registro do middleware.
@@ -110,6 +179,12 @@ Testes unitários básicos:
 
 ```bash
 python -m unittest
+```
+
+Checagem equivalente ao Pylance/Pyright:
+
+```bash
+npx --yes pyright
 ```
 
 Ao alterar scraping, prefira testes com HTML fixture ou mocks de `requests` para evitar depender da disponibilidade da Canção Nova.

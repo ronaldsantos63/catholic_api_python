@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
 import requests
@@ -42,7 +42,7 @@ class ExtractorService:
         except requests.RequestException as exc:
             raise ExternalSourceError("Could not fetch liturgy calendar") from exc
 
-        calendar_soup = BeautifulSoup(calendar.content, 'html.parser')
+        calendar_soup = BeautifulSoup(calendar.text, 'html.parser')
         href_pattern = re.compile(re.escape(Utils.map_period_to_query_params_str(period)))
         a_tag = calendar_soup.find(name="a", attrs=dict(href=href_pattern))
         if not a_tag or not a_tag.get('href'):
@@ -76,11 +76,11 @@ class ExtractorService:
         except requests.RequestException as exc:
             raise ExternalSourceError("Could not fetch liturgy page") from exc
 
-        soup = BeautifulSoup(page.content, 'html.parser')
+        soup = BeautifulSoup(page.text, 'html.parser')
         return soup
 
-    def __parse_header_scrapy(self, soup: BeautifulSoup) -> dict:
-        data = dict(date_string=dict())
+    def __parse_header_scrapy(self, soup: BeautifulSoup) -> Dict[str, Any]:
+        data: Dict[str, Any] = {"date_string": {}}
 
         data['date_string']['day'] = self.__required_text(soup, id='dia-calendar')
         data['date_string']['month'] = self.__required_text(soup, id='mes-calendar')

@@ -10,6 +10,29 @@ from app import app as application
 
 Em outros ambientes WSGI, a aplicação Flask principal está em `app:app`.
 
+### Render
+
+O deploy no Render está preparado pelo Blueprint `render.yaml`.
+
+Configuração principal:
+
+- Runtime: `python`
+- Plano inicial: `free`
+- Build Command: `pip install -r requirements.txt`
+- Start Command: `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 30`
+- Health Check Path: `/`
+- Python: definido em `.python-version`
+
+Fluxo recomendado:
+
+1. Fazer commit e push do repositório.
+2. Criar um **New > Blueprint** no Render Dashboard.
+3. Conectar o repositório.
+4. Confirmar o serviço lido de `render.yaml`.
+5. Após o deploy, testar `/`, `/privacy` e `/liturgy`.
+
+`CATHOLIC_API_KEY` não fica versionada no `render.yaml`. Configure essa variável diretamente no Dashboard se quiser exigir `X-API-Key` em produção.
+
 ## Logging
 
 - Em `FLASK_ENV=development`, logs vão para `StreamHandler`.

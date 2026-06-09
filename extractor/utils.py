@@ -27,7 +27,7 @@ class Utils:
         for strong in list(soup.find_all('strong')):
             while True:
                 sibling = Utils.next_significant_sibling(strong)
-                if not sibling or getattr(sibling, 'name', None) != 'strong':
+                if not isinstance(sibling, Tag) or sibling.name != 'strong':
                     break
 
                 left_text = strong.get_text()
@@ -35,8 +35,7 @@ class Utils:
                 if Utils.should_insert_space_between(left_text, right_text):
                     strong.append(' ')
 
-                for child in list(sibling.contents):
-                    strong.append(child.extract())
+                strong.append(sibling.get_text())
                 sibling.decompose()
 
     @staticmethod

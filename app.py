@@ -2,7 +2,7 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, g, jsonify, request, render_template
 from flask_restful import Api, Resource
 
 from adapter.logging_adapter import HostLoggerAdapter
@@ -127,7 +127,7 @@ def enforce_security_controls():
             response = json_error("Too many requests", 429)
             response.headers["Retry-After"] = str(retry_after)
             return response
-        request.rate_limit_remaining = remaining
+        g.rate_limit_remaining = remaining
 
 
 @app.before_request
@@ -159,8 +159,9 @@ def add_security_headers(response):
     if app.config["SECURITY_HSTS_ENABLED"]:
         response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 
-    if hasattr(request, "rate_limit_remaining"):
-        response.headers.setdefault("X-RateLimit-Remaining", str(request.rate_limit_remaining))
+    rate_limit_remaining = getattr(g, "rate_limit_remaining", None)
+    if rate_limit_remaining is not None:
+        response.headers.setdefault("X-RateLimit-Remaining", str(rate_limit_remaining))
 
     return response
 

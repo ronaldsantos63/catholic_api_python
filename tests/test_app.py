@@ -16,9 +16,11 @@ class AppSecurityTest(unittest.TestCase):
 
     def test_invalid_period_returns_400(self):
         response = self.client.get("/liturgy", headers={"period": "31/02/2026"})
+        body = response.get_json()
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json["error"], "period must use dd/mm/yyyy and be a valid date")
+        self.assertIsNotNone(body)
+        self.assertEqual(body["error"], "period must use dd/mm/yyyy and be a valid date")
 
     def test_liturgy_success_adds_security_headers(self):
         payload = {
@@ -32,9 +34,10 @@ class AppSecurityTest(unittest.TestCase):
         with patch("app.ExtractorService") as service_class:
             service_class.return_value.daily_liturgy_markdown.return_value = payload
             response = self.client.get("/liturgy", headers={"period": "08/06/2026"})
+        body = response.get_json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json, payload)
+        self.assertEqual(body, payload)
         self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
         self.assertEqual(response.headers["X-Frame-Options"], "DENY")
         self.assertIn("Content-Security-Policy", response.headers)
