@@ -109,19 +109,19 @@ class ExtractorService:
 
         find_first_reading = soup.find(id='liturgia-1')
         if find_first_reading:
-            data['readings']['first_reading'] = Utils.convert_soup_to_markdown(find_first_reading)
+            data['readings']['first_reading'] = Utils.convert_liturgy_soup_to_markdown(find_first_reading)
 
         find_psalm = soup.find(id='liturgia-2')
         if find_psalm:
-            data['readings']['psalm'] = Utils.convert_soup_to_markdown(find_psalm)[2:]
+            data['readings']['psalm'] = Utils.convert_liturgy_soup_to_markdown(find_psalm)
 
         find_second_reading = soup.find(id='liturgia-3')
         if find_second_reading:
-            data['readings']['second_reading'] = Utils.convert_soup_to_markdown(find_second_reading)[2:]
+            data['readings']['second_reading'] = Utils.convert_liturgy_soup_to_markdown(find_second_reading)
 
         find_gospel = soup.find(id='liturgia-4')
         if find_gospel:
-            data['readings']['gospel'] = Utils.convert_soup_to_markdown(find_gospel)[2:]
+            data['readings']['gospel'] = Utils.convert_liturgy_soup_to_markdown(find_gospel)
 
         return data
 

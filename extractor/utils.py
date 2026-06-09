@@ -2,7 +2,7 @@ import re
 from datetime import datetime
 from typing import Optional
 
-from bs4 import Tag
+from bs4 import NavigableString, Tag
 from markdownify import MarkdownConverter
 
 
@@ -10,6 +10,62 @@ class Utils:
     @staticmethod
     def convert_soup_to_markdown(soup: Tag, **options) -> str:
         return MarkdownConverter(**options).convert_soup(soup)
+
+    @staticmethod
+    def convert_liturgy_soup_to_markdown(soup: Tag, **options) -> str:
+        Utils.remove_audio_embeds(soup)
+        Utils.merge_adjacent_strong_tags(soup)
+        return Utils.normalize_markdown(Utils.convert_soup_to_markdown(soup, **options))
+
+    @staticmethod
+    def remove_audio_embeds(soup: Tag) -> None:
+        for embed in soup.select('.embeds-audio, iframe'):
+            embed.decompose()
+
+    @staticmethod
+    def merge_adjacent_strong_tags(soup: Tag) -> None:
+        for strong in list(soup.find_all('strong')):
+            while True:
+                sibling = Utils.next_significant_sibling(strong)
+                if not sibling or getattr(sibling, 'name', None) != 'strong':
+                    break
+
+                left_text = strong.get_text()
+                right_text = sibling.get_text()
+                if Utils.should_insert_space_between(left_text, right_text):
+                    strong.append(' ')
+
+                for child in list(sibling.contents):
+                    strong.append(child.extract())
+                sibling.decompose()
+
+    @staticmethod
+    def next_significant_sibling(tag: Tag):
+        sibling = tag.next_sibling
+        while isinstance(sibling, NavigableString) and not sibling.strip():
+            sibling = sibling.next_sibling
+        return sibling
+
+    @staticmethod
+    def should_insert_space_between(left_text: str, right_text: str) -> bool:
+        if not left_text or not right_text:
+            return False
+        if left_text[-1].isspace() or right_text[0].isspace():
+            return False
+        if left_text[-1] in '([{/':
+            return False
+        if right_text[0] in ')]},.;:!?':
+            return False
+        return True
+
+    @staticmethod
+    def normalize_markdown(markdown: str) -> str:
+        markdown = markdown.replace('\r\n', '\n').replace('\r', '\n')
+        markdown = markdown.replace('\xa0', ' ')
+        markdown = re.sub(r'[ \t]+\n', '\n', markdown)
+        markdown = re.sub(r'\n{3,}', '\n\n', markdown)
+        markdown = '\n'.join(line.strip() for line in markdown.split('\n'))
+        return markdown.strip()
 
     @staticmethod
     def date_dict_to_str(date_dict: dict) -> str:

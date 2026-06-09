@@ -1,18 +1,24 @@
 import os
+from typing import Dict
 
 
-def get_float_env(name, default):
-    try:
-        value = float(os.environ.get(name, default))
-    except (TypeError, ValueError):
+def get_float_env(name: str, default: float) -> float:
+    raw_value = os.getenv(name)
+    if raw_value is None:
         return default
+
+    try:
+        value = float(raw_value)
+    except ValueError:
+        return default
+
     return value if value > 0 else default
 
 
-class Config(object):
-    BASE_URL = os.environ.get('BASE_URL', default="https://liturgia.cancaonova.com")
-    REQUEST_TIMEOUT = get_float_env('REQUEST_TIMEOUT', 10.0)
-    COOKIES_AJAX = {
+class Config:
+    BASE_URL: str = os.getenv('BASE_URL', "https://liturgia.cancaonova.com")
+    REQUEST_TIMEOUT: float = get_float_env('REQUEST_TIMEOUT', 10.0)
+    COOKIES_AJAX: Dict[str, str] = {
         'qtrans_front_language': 'pb',
         'cookielawinfo-checkbox-necessary': 'yes',
         'cookielawinfo-checkbox-functional': 'no',
@@ -21,7 +27,7 @@ class Config(object):
         'cookielawinfo-checkbox-advertisement': 'no',
         'cookielawinfo-checkbox-others': 'no',
     }
-    HEADERS_AJAX = {
+    HEADERS_AJAX: Dict[str, str] = {
         'accept': '*/*',
         'accept-language': 'pt-BR,pt;q=0.9',
         'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
